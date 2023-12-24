@@ -1,0 +1,59 @@
+import telegram
+from telegram.ext import Updater, MessageHandler, Filters
+import qrcode
+from datetime import datetime
+
+def generate_qr_code(data):
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(data)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color="black", back_color="white")
+    img.save("qrcode.png")
+
+def process_message(update, context):
+    message_text = update.message.text
+
+    # Разбиваем текст сообщения на части
+    parts = message_text.split('-')
+
+    if len(parts) == 5:
+        value = parts[0]
+        date_str = parts[1]
+        quantity = parts[2]
+        weight = parts[3]
+        type_value = parts[4]
+
+        # Преобразуем дату в нужный формат
+        date_obj = datetime.strptime(date_str, '%d.%m.%y').strftime('%d.%m.%Y')
+
+        # Определяем тип значения
+        type_label = 'Smena_A' if type_value == 'А' else 'Smena_B'
+
+        # Собираем данные для QR-кода
+        qr_data = f"{value}|C14|{date_obj}|{type_label}"
+
+        # Генерируем QR-код
+        generate_qr_code(qr_data)
+
+        # Отправляем QR-код пользователю
+        context.bot.send_photo(chat_id=update.message.chat_id, photo=open('qrcode.png', 'rb'))
+    else:
+        update.message.reply_text("Неверный формат сообщения. Пожалуйста, используйте правильный формат.")
+
+def main():
+    updater = Updater("YOUR_TELEGRAM_BOT_TOKEN", use_context=True)
+    dp = updater.dispatcher
+
+    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, process_message))
+
+    updater.start_polling()
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
