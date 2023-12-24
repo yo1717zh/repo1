@@ -47,7 +47,7 @@ def process_message(update, context):
         update.message.reply_text("Неверный формат сообщения. Пожалуйста, используйте правильный формат.")
 
 def main():
-    updater = Updater("YOUR_TELEGRAM_BOT_TOKEN", use_context=True)
+    updater = Updater("6706914557:AAGRaMTC7k0H1T7vO61xANOeQlzCt_9Moxc", use_context=True)
     dp = updater.dispatcher
 
     dp.add_handler(MessageHandler(Filters.text & ~Filters.command, process_message))
